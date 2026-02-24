@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registo de Ponto</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; text-align: center; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 30px 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; }
+        input { width: 90%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; text-align: center; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 5px; font-size: 18px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-entrada { background-color: #27ae60; }
+        .btn-saida { background-color: #e74c3c; }
+        .btn-salvar { background-color: #2980b9; }
+        #areaPonto { display: none; }
+        #mensagem { margin-top: 20px; font-weight: bold; color: #27ae60; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Ponto Eletrónico</h2>
+        
+        <div id="areaIdentificacao">
+            <p>Por favor, identifique-se neste telemóvel:</p>
+            <input type="text" id="nomeColaborador" placeholder="O seu Nome Completo">
+            <button class="btn-salvar" onclick="guardarIdentificacao()">Guardar a minha identidade</button>
+        </div>
+
+        <div id="areaPonto">
+            <p>Bem-vindo(a), <b id="nomeExibicao"></b>!</p>
+            <button class="btn-entrada" onclick="enviarPonto('Entrada')">📍 Marcar Entrada</button>
+            <button class="btn-saida" onclick="enviarPonto('Saída')">📍 Marcar Saída</button>
+            <div id="mensagem"></div>
+        </div>
+    </div>
+
+    <script>
+        // === https://script.google.com/macros/s/AKfycbxTU34gg6wF4JIN_BGWMnXUOdNyg6bMMnTpicdu6NYJBHp7BmecXUeVq5ebSRn7ZjPZ/exec ===
+        const URL_DO_GOOGLE_SCRIPT = "COLE_AQUI_O_SEU_URL_DO_GOOGLE";
+
+        window.onload = function() {
+            verificarIdentificacao();
+        };
+
+        function verificarIdentificacao() {
+            let nomeGuardado = localStorage.getItem('nome_colaborador');
+            if (nomeGuardado) {
+                document.getElementById('areaIdentificacao').style.display = 'none';
+                document.getElementById('areaPonto').style.display = 'block';
+                document.getElementById('nomeExibicao').innerText = nomeGuardado;
+            }
+        }
+
+        function guardarIdentificacao() {
+            let nome = document.getElementById('nomeColaborador').value.trim();
+            if (nome !== "") {
+                localStorage.setItem('nome_colaborador', nome);
+                verificarIdentificacao();
+            } else {
+                alert("Por favor, digite o seu nome.");
+            }
+        }
+
+        function enviarPonto(acao) {
+            let nome = localStorage.getItem('nome_colaborador');
+            let mensagemDiv = document.getElementById('mensagem');
+            
+            mensagemDiv.innerText = "A enviar registo...";
+            mensagemDiv.style.color = "#f39c12"; // Cor laranja enquanto carrega
+
+            // Constrói o URL com os dados do colaborador
+            let urlCompleto = URL_DO_GOOGLE_SCRIPT + "?nome=" + encodeURIComponent(nome) + "&acao=" + encodeURIComponent(acao);
+
+            // Envia o pedido para o Google
+            fetch(urlCompleto)
+            .then(response => response.text())
+            .then(resultado => {
+                mensagemDiv.innerText = "✅ " + acao + " registada com sucesso!";
+                mensagemDiv.style.color = "#27ae60";
+            })
+            .catch(erro => {
+                mensagemDiv.innerText = "❌ Falha ao enviar. Verifique a internet.";
+                mensagemDiv.style.color = "#e74c3c";
+            });
+        }
+    </script>
+</body>
+</html>
